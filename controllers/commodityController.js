@@ -1,3 +1,4 @@
+// server/controllers/commodityController.js
 const Commodity = require('../models/Commodity');
 
 // @desc    Get all commodities with filtering

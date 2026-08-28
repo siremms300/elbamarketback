@@ -1,3 +1,4 @@
+// server/routes/listingRoutes.js
 const express = require('express');
 const router = express.Router();
 const {
@@ -12,6 +13,7 @@ const {
   completeQA,
   getListingStats,
   getAllListings,
+  deleteListing,
 } = require('../controllers/listingController');
 const { protect } = require('../middleware/auth');
 const { authorize } = require('../middleware/roleCheck');
@@ -32,5 +34,6 @@ router.get('/warehouse/awaiting', protect, authorize('admin', 'super_admin', 'wa
 router.put('/:id/receive', protect, authorize('admin', 'super_admin', 'warehouse_operator'), receiveAtWarehouse);
 router.put('/:id/complete-qa', protect, authorize('admin', 'super_admin', 'warehouse_operator'), completeQA);
 router.get('/:id', protect, getListingById);
+router.delete('/:id', protect, deleteListing);
 
 module.exports = router;

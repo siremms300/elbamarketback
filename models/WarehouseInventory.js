@@ -1,3 +1,4 @@
+// server/models/WarehouseInventory.js
 const mongoose = require('mongoose');
 
 const warehouseInventorySchema = new mongoose.Schema(

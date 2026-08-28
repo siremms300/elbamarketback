@@ -1,3 +1,4 @@
+// server/controllers/commodityTypeConntroller.js
 const CommodityType = require('../models/CommodityType');
 
 // @desc    Get all active commodity types (public)

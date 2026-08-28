@@ -1,3 +1,4 @@
+// server/models/Farmer.js
 const mongoose = require('mongoose');
 
 const farmerSchema = new mongoose.Schema(

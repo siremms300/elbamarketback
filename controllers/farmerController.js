@@ -1,3 +1,4 @@
+// server/controllers/farmerController.js
 const Farmer = require('../models/Farmer');
 
 // @desc    Get all farmers with filtering

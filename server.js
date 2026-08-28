@@ -1,3 +1,4 @@
+// server/server.js
 const express = require('express');
 const cors = require('cors');
 const morgan = require('morgan');
@@ -43,7 +44,7 @@ app.use('/api/orders', require('./routes/orderRoutes'));
 app.get('/', (req, res) => {
   res.status(200).json({ 
     success: true,
-    message: 'Elba Market API is running',
+    message: 'Elber Market API is running',
     version: '1.0.0'
   });
 });

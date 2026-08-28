@@ -1,3 +1,4 @@
+// server/models/CommodityType.js
 const mongoose = require('mongoose');
 
 const commodityTypeSchema = new mongoose.Schema(

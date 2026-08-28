@@ -227,6 +227,43 @@ const login = async (req, res) => {
 
 
 
+// const getMe = async (req, res) => {
+//   try {
+//     const user = await User.findById(req.user.id);
+
+//     if (!user) {
+//       return res.status(404).json({
+//         success: false,
+//         message: 'User not found',
+//       });
+//     }
+
+//     // Only populate if the field exists
+//     if (user.farmerProfile) {
+//       await user.populate('farmerProfile', 'farmDetails verificationTier ratings');
+//     }
+//     if (user.warehouseOperatorProfile) {
+//       await user.populate('warehouseOperatorProfile', 'name code location');
+//     }
+
+//     res.status(200).json({
+//       success: true,
+//       data: user,
+//     });
+//   } catch (error) {
+//     console.error('getMe error:', error);
+//     res.status(500).json({
+//       success: false,
+//       message: 'Failed to fetch user',
+//     });
+//   }
+// };
+
+
+
+
+// server/controllers/authController.js
+
 const getMe = async (req, res) => {
   try {
     const user = await User.findById(req.user.id);
@@ -246,9 +283,26 @@ const getMe = async (req, res) => {
       await user.populate('warehouseOperatorProfile', 'name code location');
     }
 
+    // Return consistent structure - same as login
     res.status(200).json({
       success: true,
-      data: user,
+      data: {
+        user: {
+          id: user._id,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          fullName: user.fullName,
+          email: user.email,
+          phone: user.phone,
+          role: user.role,
+          verificationTier: user.verificationTier,
+          isAdmin: user.isAdmin,
+          adminLevel: user.adminLevel,
+          adminPermissions: user.adminPermissions,
+          warehouseOperatorProfile: user.warehouseOperatorProfile,
+          farmerProfile: user.farmerProfile,
+        },
+      },
     });
   } catch (error) {
     console.error('getMe error:', error);
@@ -258,8 +312,6 @@ const getMe = async (req, res) => {
     });
   }
 };
-
-
 
 
 

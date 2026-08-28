@@ -1,3 +1,4 @@
+// server/models/Commodity.js
 const mongoose = require('mongoose');
 
 const commoditySchema = new mongoose.Schema(
@@ -5,7 +6,7 @@ const commoditySchema = new mongoose.Schema(
     // Reference to the listing that created this
     listingId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'Listing',
+      ref: 'Listing', 
     },
 
     // Commodity type from our dynamic collection

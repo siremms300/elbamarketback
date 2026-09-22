@@ -51,6 +51,7 @@ const listingSchema = new mongoose.Schema(
 
     // Images
     images: [{ url: String, publicId: String }],
+    
 
     // Pipeline status
     status: {

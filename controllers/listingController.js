@@ -7,6 +7,11 @@ const WarehouseInventory = require('../models/WarehouseInventory');
 // ============================================
 // CREATE LISTING (any authenticated user)
 // ============================================
+
+
+
+
+
 const createListing = async (req, res) => {
   try {
     const user = req.user;
@@ -35,14 +40,10 @@ const createListing = async (req, res) => {
     const isAutoApproved = ['admin', 'super_admin', 'warehouse_operator'].includes(user.role);
 
     const listingData = {
+      ...rest, // This includes images, quantity, expectedPrice, currentLocation, farmDetails, notes, warehouseId
       sourceType: user.role === 'warehouse_operator' ? 'warehouse' : user.role,
       createdBy: user._id,
       commodityType: commodityType._id,
-      quantity: req.body.quantity,
-      expectedPrice: req.body.expectedPrice,
-      currentLocation: req.body.currentLocation,
-      farmDetails: user.role === 'farmer' ? req.body.farmDetails : undefined,
-      notes: req.body.notes,
       status: isAutoApproved ? 'auto_approved' : 'pending_review',
       submittedAt: new Date(),
     };
@@ -93,6 +94,96 @@ const createListing = async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 };
+
+
+
+
+// const createListing = async (req, res) => {
+//   try {
+//     const user = req.user;
+//     const { commodityName, category, ...rest } = req.body;
+
+//     console.log('Create listing request from:', user.role, user._id);
+//     console.log('Request body:', req.body);
+
+//     if (!commodityName || !category) {
+//       return res.status(400).json({ success: false, message: 'Commodity name and category are required' });
+//     }
+
+//     // Find or create the commodity type
+//     const slug = commodityName.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+//     let commodityType = await CommodityType.findOne({ slug });
+
+//     if (!commodityType) {
+//       commodityType = await CommodityType.create({
+//         name: commodityName.trim(),
+//         category,
+//         defaultUnit: req.body.quantity?.unit || 'bag',
+//       });
+//       console.log('Created new commodity type:', commodityType.name);
+//     }
+
+//     const isAutoApproved = ['admin', 'super_admin', 'warehouse_operator'].includes(user.role);
+
+//     const listingData = {
+//       sourceType: user.role === 'warehouse_operator' ? 'warehouse' : user.role,
+//       createdBy: user._id,
+//       commodityType: commodityType._id,
+//       quantity: req.body.quantity,
+//       expectedPrice: req.body.expectedPrice,
+//       currentLocation: req.body.currentLocation,
+//       farmDetails: user.role === 'farmer' ? req.body.farmDetails : undefined,
+//       notes: req.body.notes,
+//       status: isAutoApproved ? 'auto_approved' : 'pending_review',
+//       submittedAt: new Date(),
+//     };
+
+//     // For warehouse operator - auto-assign to their warehouse
+//     if (user.role === 'warehouse_operator' && user.warehouseOperatorProfile) {
+//       listingData.sourceWarehouse = user.warehouseOperatorProfile;
+//       listingData.assignedWarehouse = user.warehouseOperatorProfile;
+//       listingData.assignedAt = new Date();
+//       listingData.assignedBy = user._id;
+//       listingData.status = 'assigned_to_warehouse';
+//       console.log('Warehouse operator listing - assigned to warehouse:', user.warehouseOperatorProfile);
+//     }
+
+//     // For admin - assign warehouse if provided
+//     if (['admin', 'super_admin'].includes(user.role) && req.body.warehouseId) {
+//       const warehouse = await Warehouse.findById(req.body.warehouseId);
+//       if (warehouse) {
+//         listingData.assignedWarehouse = warehouse._id;
+//         listingData.assignedAt = new Date();
+//         listingData.assignedBy = user._id;
+//         listingData.status = 'assigned_to_warehouse';
+//         console.log('Admin listing - assigned to warehouse:', warehouse._id);
+//       }
+//     }
+
+//     const listing = await Listing.create(listingData);
+//     console.log('Created listing:', listing._id, 'with status:', listing.status);
+
+//     const populated = await Listing.findById(listing._id)
+//       .populate('commodityType', 'name emoji slug category defaultUnit')
+//       .populate('createdBy', 'firstName lastName email role')
+//       .populate('assignedWarehouse', 'name code location');
+
+//     res.status(201).json({
+//       success: true,
+//       message: isAutoApproved
+//         ? 'Listing created successfully. Awaiting warehouse verification.'
+//         : 'Listing submitted for review.',
+//       data: populated,
+//     });
+//   } catch (error) {
+//     console.error('Create listing error:', error);
+//     if (error.name === 'ValidationError') {
+//       const messages = Object.values(error.errors).map((err) => err.message);
+//       return res.status(400).json({ success: false, message: messages.join(', ') });
+//     }
+//     res.status(500).json({ success: false, message: error.message });
+//   }
+// };
 
 // ============================================
 // GET MY LISTINGS (any authenticated user)
@@ -454,6 +545,7 @@ const completeQA = async (req, res) => {
         minimumOrder: Math.max(1, Math.floor((listing.warehouseVerification.receivedQuantity || listing.quantity.amount) * 0.01)),
         sourceType: listing.sourceType,
         sourceListing: listing._id,
+        images: listing.images || [],
       };
 
       try {

@@ -3,7 +3,7 @@ const CommodityType = require('../models/CommodityType');
 
 // @desc    Get all active commodity types (public)
 // @route   GET /api/commodity-types
-// @access  Public
+// @access  Public  
 const getCommodityTypes = async (req, res) => {
   try {
     const { category } = req.query;

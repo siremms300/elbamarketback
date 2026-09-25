@@ -14,8 +14,11 @@ connectDB();
 const app = express();
 
 // Body parser — increased limit for base64 image uploads
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+// app.use(express.json({ limit: '10mb' }));
+// app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+app.use(express.json({ limit: '500mb' }));
+app.use(express.urlencoded({ extended: true, limit: '500mb' }));
 
 // ============================================
 // CORS CONFIGURATION
@@ -81,7 +84,8 @@ app.use('/api/listings', require('./routes/listingRoutes'));
 app.use('/api/users', require('./routes/userRoutes'));
 app.use('/api/orders', require('./routes/orderRoutes'));
 app.use('/api/blog', require('./routes/blogRoutes'));
-app.use('/api/upload', require('./routes/uploadRoutes'));
+// app.use('/api/upload', require('./routes/uploadRoutes'));
+app.use('/api/upload', require('./routes/uploadRoutes')); 
 
 // ============================================
 // HEALTH CHECK

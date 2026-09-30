@@ -761,6 +761,79 @@ const deleteListing = async (req, res) => {
   }
 };
 
+
+// ============================================
+// UPDATE LISTING (owner or admin)
+// ============================================
+const updateListing = async (req, res) => {
+  try {
+    const listing = await Listing.findById(req.params.id);
+
+    if (!listing) {
+      return res.status(404).json({ success: false, message: 'Listing not found' });
+    }
+
+    const isOwner = listing.createdBy.toString() === req.user._id.toString();
+    const isAdminUser = ['admin', 'super_admin'].includes(req.user.role);
+
+    if (!isOwner && !isAdminUser) {
+      return res.status(403).json({ success: false, message: 'Not authorized to edit this listing' });
+    }
+
+    // Prevent editing listings that are already live or sold
+    const nonEditableStatuses = ['live', 'sold', 'expired'];
+    if (nonEditableStatuses.includes(listing.status)) {
+      return res.status(400).json({
+        success: false,
+        message: `Cannot edit listing with status "${listing.status}". Create a new listing instead.`,
+      });
+    }
+
+    // Fields that can be updated
+    const allowedFields = [
+      'quantity',
+      'expectedPrice',
+      'currentLocation',
+      'farmDetails',
+      'images',
+      'notes',
+    ];
+
+    allowedFields.forEach(field => {
+      if (req.body[field] !== undefined) {
+        listing[field] = req.body[field];
+      }
+    });
+
+    // Track edit in admin notes
+    listing.adminNotes.push({
+      note: `Listing edited by ${req.user.role}`,
+      addedBy: req.user._id,
+      addedAt: new Date(),
+    });
+
+    await listing.save();
+
+    const populated = await Listing.findById(listing._id)
+      .populate('commodityType', 'name emoji slug category defaultUnit')
+      .populate('createdBy', 'firstName lastName email role')
+      .populate('assignedWarehouse', 'name code location');
+
+    res.status(200).json({
+      success: true,
+      message: 'Listing updated successfully',
+      data: populated,
+    });
+  } catch (error) {
+    console.error('Update listing error:', error);
+    if (error.name === 'ValidationError') {
+      const messages = Object.values(error.errors).map(err => err.message);
+      return res.status(400).json({ success: false, message: messages.join(', ') });
+    }
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 module.exports = {
   createListing,
   getMyListings,
@@ -774,6 +847,7 @@ module.exports = {
   getListingStats,
   getAllListings,
   deleteListing,
+  updateListing,
 };
 
 

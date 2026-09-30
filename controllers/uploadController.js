@@ -1,58 +1,38 @@
-const cloudinary = require('../config/cloudinary');
+const fs = require('fs');
+const path = require('path');
 
 const uploadImage = async (req, res) => {
   try {
     console.log('=== UPLOAD REQUEST ===');
     console.log('User:', req.user?._id, req.user?.role);
-    console.log('Body keys:', Object.keys(req.body));
-    console.log('Image data present:', !!req.body.image);
-    console.log('Image data size (chars):', req.body.image?.length || 0);
+    console.log('File:', req.file?.filename);
 
-    if (!req.body.image) {
+    if (!req.file) {
       return res.status(400).json({
         success: false,
-        message: 'No image data provided',
+        message: 'No file uploaded',
       });
     }
 
-    // Check if it's a valid base64 data URL
-    if (!req.body.image.startsWith('data:image/')) {
-      return res.status(400).json({
-        success: false,
-        message: 'Invalid image format. Must be a base64 data URL.',
-      });
-    }
+    // Build the public URL
+    const baseUrl = process.env.NODE_ENV === 'production'
+      ? 'https://elbamarketback.onrender.com'
+      : 'http://localhost:5000';
 
-    console.log('Uploading to Cloudinary...');
-
-    const result = await cloudinary.uploader.upload(req.body.image, {
-      folder: 'elbermarket/products',
-      resource_type: 'image',
-      transformation: [
-        { width: 1000, height: 1000, crop: 'limit' },
-        { quality: 'auto:good' },
-      ],
-    });
-
-    console.log('Cloudinary upload success:', result.secure_url);
+    const fileUrl = `${baseUrl}/uploads/${req.file.filename}`;
 
     res.status(200).json({
       success: true,
       data: {
-        url: result.secure_url,
-        publicId: result.public_id,
+        url: fileUrl,
+        publicId: req.file.filename,
       },
     });
   } catch (error) {
-    console.error('=== UPLOAD ERROR ===');
-    console.error('Error name:', error.name);
-    console.error('Error message:', error.message);
-    console.error('Error details:', JSON.stringify(error, null, 2));
-
+    console.error('Upload error:', error);
     res.status(500).json({
       success: false,
       message: 'Upload failed: ' + error.message,
-      errorName: error.name,
     });
   }
 };
@@ -62,21 +42,28 @@ const deleteImage = async (req, res) => {
     const { publicId } = req.params;
 
     if (!publicId) {
-      return res.status(400).json({ success: false, message: 'Public ID required' });
+      return res.status(400).json({ success: false, message: 'Filename required' });
     }
 
-    const decodedPublicId = decodeURIComponent(publicId);
+    // Check both possible locations
+    const possiblePaths = [
+      path.join(__dirname, '..', 'uploads', publicId),
+      process.env.UPLOAD_DIR ? path.join(process.env.UPLOAD_DIR, publicId) : null,
+    ].filter(Boolean);
 
-    console.log('Deleting image:', decodedPublicId);
-
-    const result = await cloudinary.uploader.destroy(decodedPublicId);
-
-    console.log('Delete result:', result);
+    let deleted = false;
+    for (const filePath of possiblePaths) {
+      if (fs.existsSync(filePath)) {
+        fs.unlinkSync(filePath);
+        console.log('Deleted:', filePath);
+        deleted = true;
+        break;
+      }
+    }
 
     res.status(200).json({
       success: true,
-      message: 'Image deleted',
-      result,
+      message: deleted ? 'Image deleted' : 'File not found (already deleted)',
     });
   } catch (error) {
     console.error('Delete error:', error);
@@ -88,6 +75,177 @@ const deleteImage = async (req, res) => {
 };
 
 module.exports = { uploadImage, deleteImage };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// const cloudinary = require('../config/cloudinary');
+
+// const uploadImage = async (req, res) => {
+//   try {
+//     console.log('=== UPLOAD REQUEST ===');
+//     console.log('User:', req.user?._id, req.user?.role);
+//     console.log('Body keys:', Object.keys(req.body));
+//     console.log('Image data present:', !!req.body.image);
+//     console.log('Image data size (chars):', req.body.image?.length || 0);
+
+//     if (!req.body.image) {
+//       return res.status(400).json({
+//         success: false,
+//         message: 'No image data provided',
+//       });
+//     }
+
+//     // Check if it's a valid base64 data URL
+//     if (!req.body.image.startsWith('data:image/')) {
+//       return res.status(400).json({
+//         success: false,
+//         message: 'Invalid image format. Must be a base64 data URL.',
+//       });
+//     }
+
+//     console.log('Uploading to Cloudinary...');
+
+//     const result = await cloudinary.uploader.upload(req.body.image, {
+//       folder: 'elbermarket/products',
+//       resource_type: 'image',
+//       transformation: [
+//         { width: 1000, height: 1000, crop: 'limit' },
+//         { quality: 'auto:good' },
+//       ],
+//     });
+
+//     console.log('Cloudinary upload success:', result.secure_url);
+
+//     res.status(200).json({
+//       success: true,
+//       data: {
+//         url: result.secure_url,
+//         publicId: result.public_id,
+//       },
+//     });
+//   } catch (error) {
+//     console.error('=== UPLOAD ERROR ===');
+//     console.error('Error name:', error.name);
+//     console.error('Error message:', error.message);
+//     console.error('Error details:', JSON.stringify(error, null, 2));
+
+//     res.status(500).json({
+//       success: false,
+//       message: 'Upload failed: ' + error.message,
+//       errorName: error.name,
+//     });
+//   }
+// };
+
+// const deleteImage = async (req, res) => {
+//   try {
+//     const { publicId } = req.params;
+
+//     if (!publicId) {
+//       return res.status(400).json({ success: false, message: 'Public ID required' });
+//     }
+
+//     const decodedPublicId = decodeURIComponent(publicId);
+
+//     console.log('Deleting image:', decodedPublicId);
+
+//     const result = await cloudinary.uploader.destroy(decodedPublicId);
+
+//     console.log('Delete result:', result);
+
+//     res.status(200).json({
+//       success: true,
+//       message: 'Image deleted',
+//       result,
+//     });
+//   } catch (error) {
+//     console.error('Delete error:', error);
+//     res.status(500).json({
+//       success: false,
+//       message: 'Delete failed: ' + error.message,
+//     });
+//   }
+// };
+
+// module.exports = { uploadImage, deleteImage };
 
 
 

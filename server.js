@@ -3,7 +3,13 @@ const express = require('express');
 const cors = require('cors');
 const morgan = require('morgan');
 const dotenv = require('dotenv');
-const connectDB = require('./config/db');
+const connectDB = require('./config/db'); 
+const path = require('path');
+
+
+const { uploadDir } = require('./config/storage');
+
+// Serve uploaded files
 
 // Load env vars
 dotenv.config();
@@ -85,7 +91,8 @@ app.use('/api/users', require('./routes/userRoutes'));
 app.use('/api/orders', require('./routes/orderRoutes'));
 app.use('/api/blog', require('./routes/blogRoutes'));
 // app.use('/api/upload', require('./routes/uploadRoutes'));
-app.use('/api/upload', require('./routes/uploadRoutes')); 
+app.use('/api/upload', require('./routes/uploadRoutes'));  
+app.use('/uploads', express.static(uploadDir));
 
 // ============================================
 // HEALTH CHECK

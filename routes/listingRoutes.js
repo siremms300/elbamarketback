@@ -12,8 +12,9 @@ const {
   receiveAtWarehouse, 
   completeQA,
   getListingStats,
-  getAllListings,
-  deleteListing,
+  getAllListings, 
+  deleteListing,  
+  updateListing,
 } = require('../controllers/listingController');
 const { protect } = require('../middleware/auth');
 const { authorize } = require('../middleware/roleCheck');
@@ -35,5 +36,6 @@ router.put('/:id/receive', protect, authorize('admin', 'super_admin', 'warehouse
 router.put('/:id/complete-qa', protect, authorize('admin', 'super_admin', 'warehouse_operator'), completeQA);
 router.get('/:id', protect, getListingById);
 router.delete('/:id', protect, deleteListing);
+router.put('/:id', protect, updateListing); 
 
 module.exports = router;
